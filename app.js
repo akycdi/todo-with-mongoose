@@ -1,8 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const _ = require("lodash");
-
+require('dotenv').config()
+//console.log(process.env) 
 
 const app = express();
 
@@ -10,7 +11,11 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
-mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true });
+mongoose.connect(`mongodb+srv://arunkumar36824:${process.env.password}@cluster.rax7nw0.mongodb.net/test`, { useNewUrlParser: true })
+.then(console.log("Runnings"))
+.catch((e) => {
+  console.log(e);
+});
 
 const itemsSchema = {
   name: String
@@ -81,7 +86,7 @@ app.post("/", function (req, res) {
 app.post("/delete", (req, res) => {
   const checkedItemId = req.body.checkbox;
   const listname = _.trim(req.body.listTitle);
-  console.log(listname , " length :", listname.length);
+  console.log(listname, " length :", listname.length);
   if (listname === "Today") {
     Item.findByIdAndRemove(checkedItemId, (err) => {
       if (!err) {
@@ -94,7 +99,7 @@ app.post("/delete", (req, res) => {
     List.findOneAndUpdate({ name: listname }, { $pull: { items: { _id: checkedItemId } } })
       .then(() => {
         res.redirect(`/${listname}`);
-    })
+      })
       .catch((e) => console.log(e));
   }
 
